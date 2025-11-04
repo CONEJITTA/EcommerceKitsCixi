@@ -16,6 +16,13 @@ function CommentsBox({ productId, avg = 0, ratingCount = 0 }) {
   const [rating, setRating] = useState(0);
   const { data: session } = useSession();
   const toast = useToast();
+  const [displayAvg, setDisplayAvg] = useState(Number(avg || 0));
+  const [displayCount, setDisplayCount] = useState(Number(ratingCount || 0));
+
+  useEffect(() => {
+    setDisplayAvg(Number(avg || 0));
+    setDisplayCount(Number(ratingCount || 0));
+  }, [avg, ratingCount]);
 
   async function loadComments() {
     const res = await fetch(`/api/products/${productId}/comments`, { cache: "no-store" });
@@ -33,20 +40,6 @@ function CommentsBox({ productId, avg = 0, ratingCount = 0 }) {
     if (!txt) return;
     setLoading(true);
     try {
-      // Si seleccionó estrellas, guardamos la calificación primero (opcional)
-      if (rating > 0) {
-        try {
-          await fetch(`/api/ratings/create`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ productId, value: rating })
-          });
-        } catch (e) {
-          // si falla la calificación, continuamos con el comentario
-          console.error("Rating failed", e);
-        }
-      }
-
       const res = await fetch(`/api/products/${productId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -88,12 +81,35 @@ function CommentsBox({ productId, avg = 0, ratingCount = 0 }) {
             type="button"
             aria-label={`Calificar ${i} estrella${i>1?"s":""}`}
             className="p-0.5"
-            onClick={() => {
+            onClick={async () => {
               if (!session?.user?.id) {
                 toast.info("Inicia sesión para calificar");
                 return;
               }
               setRating(i);
+              try {
+                const res = await fetch(`/api/ratings/create`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ productId, value: i })
+                });
+                if (!res.ok) {
+                  const err = await res.json().catch(() => ({}));
+                  toast.error(err?.error || `Error ${res.status}`);
+                  return;
+                }
+                // refrescar promedio para este producto
+                const pr = await fetch(`/api/products`, { cache: "no-store" });
+                const list = await pr.json();
+                const me = Array.isArray(list) ? list.find((x) => x.id === productId) : null;
+                if (me) {
+                  setDisplayAvg(Number(me.averageRating || 0));
+                  setDisplayCount(Number((me.ratings || []).length || 0));
+                }
+                toast.success("¡Gracias por tu calificación!");
+              } catch {
+                toast.error("No se pudo guardar tu calificación");
+              }
             }}
           >
             <span
@@ -104,7 +120,7 @@ function CommentsBox({ productId, avg = 0, ratingCount = 0 }) {
             </span>
           </button>
         ))}
-        <span className="ml-2 text-xs text-slate-600">{Number(avg || 0).toFixed(1)} ({ratingCount || 0})</span>
+        <span className="ml-2 text-xs text-slate-600">{Number(displayAvg || 0).toFixed(1)} ({displayCount || 0})</span>
       </div>
       {open && (
         <div className="mt-3 w-full card p-4 text-slate-900">
@@ -134,7 +150,6 @@ function CommentsBox({ productId, avg = 0, ratingCount = 0 }) {
               {list.map((c) => (
                 <li key={c.id} className="card p-3">
                   <div className="text-xs text-slate-700">
-                    <div className="font-semibold text-slate-900">Comentario de usuario</div>
                     <div className="opacity-80">{c.content}</div>
                     <div className="opacity-60 mt-1">{new Date(c.createdAt).toLocaleString()}</div>
                   </div>
