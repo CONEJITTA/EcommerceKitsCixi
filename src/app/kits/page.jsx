@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "../../components/ToastProvider";
 
 export default function CreateKitPage() {
   const [name, setName] = useState("");
@@ -8,6 +9,7 @@ export default function CreateKitPage() {
   const [selected, setSelected] = useState({}); 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const toast = useToast();
 
   useEffect(() => {
     (async () => {
@@ -46,12 +48,12 @@ export default function CreateKitPage() {
     }));
 
     if (items.length === 0) {
-      alert("Debe seleccionar al menos un producto para crear un kit");
+      toast.info("Selecciona al menos un producto para crear un kit");
       return; 
     }
 
     if (!name.trim()) {
-      alert("Ingresa un nombre para el kit");
+      toast.warn("Ingresa un nombre para el kit");
       return;
     }
 
@@ -65,14 +67,15 @@ export default function CreateKitPage() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err?.error || `Error ${res.status}`);
+        toast.error(err?.error || `Error ${res.status}`);
         return;
       }
 
       
-      setName("");
-      setSelected({});
-      setMessage("Kit creado exitosamente"); 
+  setName("");
+  setSelected({});
+  setMessage("");
+  toast.success("Kit creado exitosamente"); 
     } finally {
       setLoading(false);
     }

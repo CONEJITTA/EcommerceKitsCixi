@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
 import prisma from "@/libs/db"; // usando tu singleton
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../auth/[...nextauth]/route";
 
 export async function POST(req) {
   try {
-    const { productId, userId, value } = await req.json();
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Debes iniciar sesión para calificar" }, { status: 401 });
+    }
+
+    const { productId, value } = await req.json();
+    const userId = Number(session.user.id);
 
     // Validar que el producto exista
     const product = await prisma.product.findUnique({ where: { id: productId } });
@@ -19,13 +27,19 @@ export async function POST(req) {
       }
     }
 
-    // Crear o actualizar rating
+    // Validar valor entre 1 y 5
+    const val = Number(value);
+    if (!Number.isFinite(val) || val < 1 || val > 5) {
+      return NextResponse.json({ error: "Valor de calificación inválido" }, { status: 400 });
+    }
+
+    // Crear o actualizar rating del usuario autenticado
     const rating = await prisma.rating.upsert({
       where: {
         userId_productId: { userId, productId }
       },
-      update: { value },
-      create: { value, productId, userId }
+      update: { value: val },
+      create: { value: val, productId, userId }
     });
 
     return NextResponse.json(rating, { status: 200 });

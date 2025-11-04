@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useToast } from "../../../components/ToastProvider";
 
 export default function EditKitPage({ params }) {
   const kitId = Number(params.id);
@@ -9,6 +10,7 @@ export default function EditKitPage({ params }) {
   const [products, setProducts] = useState([]);
   const [selected, setSelected] = useState({});
   const [loading, setLoading] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     (async () => {
@@ -47,8 +49,8 @@ export default function EditKitPage({ params }) {
       productId: Number(productId),
       quantity,
     }));
-    if (!name.trim()) return alert("Nombre requerido");
-    if (items.length === 0) return alert("Debe seleccionar al menos un producto para crear un kit");
+  if (!name.trim()) { toast.warn("Nombre requerido"); return; }
+  if (items.length === 0) { toast.info("Selecciona al menos un producto"); return; }
     setLoading(true);
     try {
       const res = await fetch(`/api/kits/${kitId}`, {
@@ -58,11 +60,11 @@ export default function EditKitPage({ params }) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err?.error || `Error ${res.status}`);
+        toast.error(err?.error || `Error ${res.status}`);
         return;
       }
-      alert("Kit actualizado");
-      window.location.href = "/"; 
+      toast.success("Kit actualizado");
+      setTimeout(() => { window.location.href = "/"; }, 400);
     } finally {
       setLoading(false);
     }

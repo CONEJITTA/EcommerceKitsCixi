@@ -5,14 +5,17 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { addToCart } from "../libs/cart";
 import { addKitToCart } from "../libs/cart";
+import { useToast } from "../components/ToastProvider";
 
-function CommentsBox({ productId }) {
+function CommentsBox({ productId, avg = 0, ratingCount = 0 }) {
   const [open, setOpen] = useState(false);
   const [list, setList] = useState([]);
   const [count, setCount] = useState(0);
   const [content, setContent] = useState("");
   const [loading, setLoading] = useState(false);
   const [rating, setRating] = useState(0);
+  const { data: session } = useSession();
+  const toast = useToast();
 
   async function loadComments() {
     const res = await fetch(`/api/products/${productId}/comments`, { cache: "no-store" });
@@ -51,7 +54,7 @@ function CommentsBox({ productId }) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err?.error || `Error ${res.status}`);
+        toast.error(err?.error || `Error ${res.status}`);
         setLoading(false);
         return;
       }
@@ -63,6 +66,7 @@ function CommentsBox({ productId }) {
       setCount((c) => c + 1);
       setContent("");
       setRating(0);
+      toast.success("Comentario publicado");
     } finally {
       setLoading(false);
     }
@@ -70,7 +74,7 @@ function CommentsBox({ productId }) {
 
   return (
     <div className="flex flex-col items-end w-full">
-      {/* Fila superior: solo botón de comentarios */}
+      {/* Fila superior: botón de comentarios */}
       <div className="flex items-center gap-3">
         <button onClick={() => setOpen((v) => !v)} className="btn-secondary">
           Comentarios ({count})
@@ -84,7 +88,13 @@ function CommentsBox({ productId }) {
             type="button"
             aria-label={`Calificar ${i} estrella${i>1?"s":""}`}
             className="p-0.5"
-            onClick={() => setRating(i)}
+            onClick={() => {
+              if (!session?.user?.id) {
+                toast.info("Inicia sesión para calificar");
+                return;
+              }
+              setRating(i);
+            }}
           >
             <span
               className="text-lg"
@@ -94,6 +104,7 @@ function CommentsBox({ productId }) {
             </span>
           </button>
         ))}
+        <span className="ml-2 text-xs text-slate-600">{Number(avg || 0).toFixed(1)} ({ratingCount || 0})</span>
       </div>
       {open && (
         <div className="mt-3 w-full card p-4 text-slate-900">
@@ -144,6 +155,7 @@ export default function HomePage() {
   const [products, setProducts] = useState([]);
   const [kits, setKits] = useState([]);
   const fmt = useMemo(() => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }), []);
+  const toast = useToast();
 
   async function loadProducts() {
     const res = await fetch("/api/products", { cache: "no-store" });
@@ -173,8 +185,18 @@ export default function HomePage() {
 
   const deleteKit = async (id) => {
     if (!confirm("¿Eliminar este kit?")) return;
-    await fetch(`/api/kits/${id}`, { method: "DELETE" });
-    await loadKits();
+    try {
+      const res = await fetch(`/api/kits/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err?.error || `Error ${res.status}`);
+        return;
+      }
+      toast.success("Kit eliminado");
+      await loadKits();
+    } catch (e) {
+      toast.error("No se pudo eliminar el kit");
+    }
   };
 
   return (
@@ -214,18 +236,18 @@ export default function HomePage() {
                         onClick={() => {
                           const r = addToCart({ id: p.id, name: p.name, price: p.price, stock: p.stock });
                           if (!r.ok) {
-                            if (r.reason === "no-stock") alert("Sin stock disponible");
-                            if (r.reason === "stock-limit") alert("Alcanzaste el stock disponible");
+                            if (r.reason === "no-stock") toast.error("Sin stock disponible");
+                            if (r.reason === "stock-limit") toast.warn("Alcanzaste el stock disponible");
                             return;
                           }
-                          alert("Agregado al carrito");
+                            toast.success("Agregado al carrito");
                         }}
                         className="btn-primary"
                       >
                         Agregar al carrito
                       </button>
                     )}
-                    <CommentsBox productId={p.id} />
+                    <CommentsBox productId={p.id} avg={p.averageRating} ratingCount={(p.ratings || []).length} />
                   </div>
                 </li>
               ))}
@@ -259,7 +281,7 @@ export default function HomePage() {
                         onClick={() => {
                           const r = addKitToCart(k);
                           if (!r.ok) return;
-                          alert("Kit agregado al carrito");
+                          toast.success("Kit agregado al carrito");
                         }}
                         className="btn-primary"
                       >

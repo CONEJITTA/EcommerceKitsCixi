@@ -36,11 +36,15 @@ export const authOptions = {
   // 👇 Mueve aquí el bloque callbacks
   callbacks: {
     async jwt({ token, user }) {
-      if (user) token.role = user.role;   // agrega el role al token
+      if (user) {
+        token.role = user.role;   // agrega el role al token
+        token.id = user.id;       // agrega el id del usuario al token
+      }
       return token;
     },
     async session({ session, token }) {
       if (token?.role) session.user.role = token.role;
+      if (token?.id) session.user.id = token.id;
       return session;
     },
   },

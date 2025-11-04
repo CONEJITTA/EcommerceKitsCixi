@@ -1,14 +1,17 @@
 "use client";
 import { useForm } from "react-hook-form";
 import { useRouter } from "next/navigation";
+import { useToast } from "../../../components/ToastProvider";
 
 function RegisterPage() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const router = useRouter();
+  const toast = useToast();
 
   const onSubmit = handleSubmit(async (data) => {
     if (data.password !== data.confirmPassword) {
-      return alert("Contraseña no coincide");
+      toast.warn("La contraseña no coincide");
+      return;
     }
 
     const res = await fetch('/api/auth/register', {
@@ -22,11 +25,11 @@ function RegisterPage() {
     });
 
     if (res.ok) {
-      alert("Usuario creado con éxito");
+      toast.success("Usuario creado con éxito");
       router.push('/auth/login');
     } else {
-      const errorData = await res.json();
-      alert(errorData.error || "El usuario ya existe");
+      const errorData = await res.json().catch(() => ({}));
+      toast.error(errorData?.error || "El usuario ya existe");
     }
   });
 

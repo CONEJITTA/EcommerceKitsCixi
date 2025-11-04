@@ -1,7 +1,12 @@
 "use client";
 
 import SessionWrapper from "./SessionWrapper";
+import ToastProvider from "./ToastProvider";
 
 export default function ClientWrapper({ children }) {
-  return <SessionWrapper>{children}</SessionWrapper>;
+  return (
+    <ToastProvider>
+      <SessionWrapper>{children}</SessionWrapper>
+    </ToastProvider>
+  );
 }
