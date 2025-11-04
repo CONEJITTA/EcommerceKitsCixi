@@ -2,6 +2,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientWrapper from "../components/ClientWrapper";
+import Navbar from "../components/Navbar";
 
 
 
@@ -26,7 +27,10 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ClientWrapper>{children}</ClientWrapper>
+        <ClientWrapper>
+          <Navbar />
+          {children}
+        </ClientWrapper>
       </body>
     </html>
   );

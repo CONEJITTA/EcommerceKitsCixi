@@ -27,12 +27,11 @@ export async function GET() {
 export async function POST(req) {
   try {
     // ✅ Obtener sesión y verificar rol
-    const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions);
     console.log(">>> /api/products POST hit");
     console.log("SESSION @createProduct:", session?.user);
 
-
-      if (!session ) {
+    if (!session || session?.user?.role !== 'admin') {
       return NextResponse.json(
         { error: 'No tienes permisos para crear productos' },
         { status: 403 }

@@ -36,61 +36,47 @@ function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center bg-[#b37c8e]">
-      {/* Navbar */}
-      <nav className="w-full bg-[#d9a5b2] shadow-lg py-4 px-6 flex items-center justify-between">
-        <h1 className="text-white text-2xl font-bold">ECOMMERCE CIXI ♡</h1>
-        <button
-          onClick={handleHome} // Redirige al Home
-          className="bg-[#623645] text-white rounded px-3 py-1 text-sm font-semibold shadow"
-        >
-          Home
-        </button>
-      </nav>
+    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+      <form onSubmit={onSubmit} className="card w-full max-w-sm p-6">
+        <h1 className="text-slate-900 font-bold text-2xl mb-4 text-center">Registro</h1>
 
-      {/* Formulario de Registro */}
-      <form onSubmit={onSubmit} className="w-1/4 bg-[#d9a5b2] p-4 rounded-xl shadow-lg mt-10">
-        <h1 className="text-slate-200 font-bold text-4xl mb-3 text-center">Registro</h1>
-
-        <label className="text-slate-500 mb-1 block text-xs">Nombre de Usuario</label>
+        <label className="text-slate-600 mb-1 block text-xs">Nombre de usuario</label>
         <input
           type="text"
           {...register("username", { required: { value: true, message: "Nombre de usuario requerido" } })}
-          className="p-2 rounded mb-2 bg-[#f0cdd8] text-slate-900 w-full"
+          className="input-base w-full mb-2"
           placeholder="nombre de usuario"
         />
-        {errors.username && <span className="text-red-500 text-xs">{errors.username.message}</span>}
+  {errors.username && <span className="text-slate-700 text-xs">{errors.username.message}</span>}
 
-        <label className="text-slate-500 mb-1 block text-xs">E-mail</label>
+        <label className="text-slate-600 mb-1 block text-xs">E-mail</label>
         <input
           type="email"
           {...register("email", { required: { value: true, message: "E-mail requerido" } })}
-          className="p-2 rounded mb-2 bg-[#f0cdd8] text-slate-900 w-full"
+          className="input-base w-full mb-2"
           placeholder="email@gmail.com"
         />
-        {errors.email && <span className="text-red-500 text-xs">{errors.email.message}</span>}
+  {errors.email && <span className="text-slate-700 text-xs">{errors.email.message}</span>}
 
-        <label className="text-slate-500 mb-1 block text-xs">Contraseña</label>
+        <label className="text-slate-600 mb-1 block text-xs">Contraseña</label>
         <input
           type="password"
           {...register("password", { required: { value: true, message: "Contraseña requerida" } })}
-          className="p-2 rounded mb-2 bg-[#f0cdd8] text-slate-900 w-full"
+          className="input-base w-full mb-2"
           placeholder="*******"
         />
-        {errors.password && <span className="text-red-500 text-xs">{errors.password.message}</span>}
+  {errors.password && <span className="text-slate-700 text-xs">{errors.password.message}</span>}
 
-        <label className="text-slate-500 mb-1 block text-xs">Confirmar Contraseña</label>
+        <label className="text-slate-600 mb-1 block text-xs">Confirmar contraseña</label>
         <input
           type="password"
           {...register("confirmPassword", { required: { value: true, message: "Confirmación requerida" } })}
-          className="p-2 rounded mb-3 bg-[#f0cdd8] text-slate-900 w-full"
+          className="input-base w-full mb-3"
           placeholder="*******"
         />
-        {errors.confirmPassword && <span className="text-red-500 text-xs">{errors.confirmPassword.message}</span>}
+  {errors.confirmPassword && <span className="text-slate-700 text-xs">{errors.confirmPassword.message}</span>}
 
-        <button className="w-1/2 block mx-auto mt-3 bg-[#623645] hover:bg-[#d4839e] text-white font-bold p-2 rounded-lg">
-          Registrarse
-        </button>
+        <button className="btn-primary w-full mt-3">Registrarse</button>
       </form>
     </div>
   );

@@ -6,6 +6,7 @@ import { getCart, setQty, removeFromCart } from "../../libs/cart";
 export default function CartPage() {
   const [items, setItems] = useState([]);
   const [productsMap, setProductsMap] = useState({}); 
+  const fmt = useMemo(() => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }), []);
 
   useEffect(() => {
     setItems(getCart());
@@ -73,26 +74,18 @@ export default function CartPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#b48696]">
-      {/* Navbar */}
-      <nav className="bg-[#d9a5b2] shadow-lg py-4 px-6 flex justify-between items-center">
-        <h1 className="text-white text-2xl font-bold">ECOMMERCE CIXI ♡</h1>
-        <div className="flex gap-4">
-          <a href="/" className="text-white hover:text-[#623645] font-semibold">Home</a>
-          <a href="/cart" className="text-white hover:text-[#623645] font-semibold">Carrito</a>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-white">
 
       {/* Título centrado */}
       <div className="pt-10 px-4">
-        <h2 className="text-center text-3xl text-white font-bold">Carrito de compras</h2>
+        <h2 className="text-center text-2xl text-slate-900 font-bold">Carrito de compras</h2>
       </div>
 
       {/* Contenido */}
       <div className="flex justify-center pt-6 px-4 pb-20">
-        <div className="w-3/5 space-y-4">
+  <div className="w-full max-w-2xl space-y-3">
           {items.length === 0 ? (
-            <p className="text-xs text-slate-200 text-center mt-2">Tu carrito está vacío.</p>
+            <p className="text-xs text-slate-600 text-center mt-2">Tu carrito está vacío.</p>
           ) : (
             <>
               <ul className="space-y-3">
@@ -104,12 +97,12 @@ export default function CartPage() {
                   return (
                     <li
                       key={it.id}
-                      className="rounded-xl border border-[#dac2b2] bg-[#f0cdd8] p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 shadow text-slate-900"
+                      className="card p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 text-slate-900"
                     >
-                      <div>
-                        <div className="font-semibold text-[#623645] text-lg">{it.name}</div>
-                        <div className="text-xs">Precio: ${price}</div>
-                        <div className="text-xs">Stock disponible: {Number.isFinite(max) ? max : "—"}</div>
+                      <div className="min-w-0">
+                        <div className="font-semibold text-slate-900 text-sm truncate">{it.name}</div>
+                        <div className="text-xs text-slate-600">Precio: {fmt.format(price)}</div>
+                        <div className="text-xs text-slate-600">Stock: {Number.isFinite(max) ? max : "—"}</div>
                       </div>
 
                       {/* Controles de cantidad */}
@@ -117,7 +110,7 @@ export default function CartPage() {
                         <button
                           onClick={() => dec(it)}
                           disabled={(it.qty || 1) <= 1}
-                          className="bg-[#623645] text-white rounded px-2 py-1 text-xs font-semibold shadow disabled:opacity-60"
+                          className="btn-secondary px-2"
                           aria-label="Disminuir cantidad"
                         >
                           −
@@ -129,13 +122,13 @@ export default function CartPage() {
                           max={max}
                           value={it.qty || 1}
                           onChange={(e) => changeQty(it, e.target.value)}
-                          className="w-16 text-center rounded-md border border-[#dac2b2] bg-[#f0cdd8] text-[#623645] text-xs px-2 py-1 shadow"
+                          className="w-14 text-center input-base"
                         />
 
                         <button
                           onClick={() => inc(it)}
                           disabled={(it.qty || 1) >= max}
-                          className="bg-[#623645] text-white rounded px-2 py-1 text-xs font-semibold shadow disabled:opacity-60"
+                          className="btn-secondary px-2"
                           aria-label="Aumentar cantidad"
                         >
                           +
@@ -143,11 +136,11 @@ export default function CartPage() {
                       </div>
 
                       {/* Subtotal y eliminar */}
-                      <div className="flex items-center gap-3">
-                        <div className="text-[#623645] font-semibold">${subtotal}</div>
+                      <div className="flex items-center gap-2">
+                        <div className="text-slate-900 font-semibold whitespace-nowrap">{fmt.format(subtotal)}</div>
                         <button
                           onClick={() => remove(it)}
-                          className="bg-[#623645] text-white rounded px-3 py-1 text-xs font-semibold shadow"
+                          className="btn-primary"
                         >
                           Eliminar
                         </button>
@@ -158,9 +151,9 @@ export default function CartPage() {
               </ul>
 
               {/* Total */}
-              <div className="rounded-xl border border-[#dac2b2] bg-[#f0cdd8] p-4 flex justify-between items-center shadow">
-                <span className="text-[#623645] font-bold">Total</span>
-                <span className="text-[#623645] font-bold">${total}</span>
+              <div className="card p-3 flex justify-between items-center">
+                <span className="text-slate-900 font-bold">Total</span>
+                <span className="text-slate-900 font-bold">{fmt.format(total)}</span>
               </div>
             </>
           )}

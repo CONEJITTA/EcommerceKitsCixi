@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { addToCart } from "../libs/cart";
 import { addKitToCart } from "../libs/cart";
 
@@ -52,11 +54,11 @@ function CommentsBox({ productId }) {
 
   return (
     <div className="flex flex-col items-end">
-      <button onClick={() => setOpen((v) => !v)} className="bg-[#623645] text-white rounded px-3 py-1 text-xs font-semibold shadow">
+      <button onClick={() => setOpen((v) => !v)} className="btn-secondary">
         Comentarios ({count})
       </button>
       {open && (
-        <div className="mt-3 w-full rounded-xl border border-[#dac2b2] bg-[#f0cdd8] p-4 shadow text-slate-900">
+        <div className="mt-3 w-full card p-4 text-slate-900">
           <div className="mb-3">
             <textarea
               rows={3}
@@ -64,13 +66,13 @@ function CommentsBox({ productId }) {
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Escribe tu comentario (máx. 500)"
-              className="w-full rounded-md border border-[#dac2b2] bg-[#f0cdd8] text-[#623645] text-xs px-2 py-1 shadow"
+              className="w-full input-base"
             />
             <div className="flex justify-end mt-2">
               <button
                 onClick={publish}
                 disabled={loading || content.trim().length === 0}
-                className="bg-[#623645] text-white rounded px-3 py-1 text-xs font-semibold shadow disabled:opacity-60"
+                className="btn-secondary"
               >
                 {loading ? "Publicando..." : "Publicar"}
               </button>
@@ -81,9 +83,9 @@ function CommentsBox({ productId }) {
           ) : (
             <ul className="space-y-2">
               {list.map((c) => (
-                <li key={c.id} className="rounded-md border border-[#dac2b2] bg-[#f0d7e0] p-3">
-                  <div className="text-xs">
-                    <div className="font-semibold text-[#623645]">Comentario de usuario</div>
+                <li key={c.id} className="card p-3">
+                  <div className="text-xs text-slate-700">
+                    <div className="font-semibold text-slate-900">Comentario de usuario</div>
                     <div className="opacity-80">{c.content}</div>
                     <div className="opacity-60 mt-1">{new Date(c.createdAt).toLocaleString()}</div>
                   </div>
@@ -98,8 +100,12 @@ function CommentsBox({ productId }) {
 }
 
 export default function HomePage() {
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "admin";
+  const router = useRouter();
   const [products, setProducts] = useState([]);
   const [kits, setKits] = useState([]);
+  const fmt = useMemo(() => new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }), []);
 
   async function loadProducts() {
     const res = await fetch("/api/products", { cache: "no-store" });
@@ -117,6 +123,13 @@ export default function HomePage() {
     loadKits();
   }, []);
 
+  // Si es admin y entra al home, redirigir a /products/pricing
+  useEffect(() => {
+    if (isAdmin) {
+      router.replace("/products/pricing");
+    }
+  }, [isAdmin, router]);
+
   const kitTotal = (k) =>
     (k.items || []).reduce((acc, it) => acc + (Number(it?.product?.price || 0) * Number(it?.quantity || 0)), 0);
 
@@ -127,50 +140,53 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#b48696]">
-      {/* Navbar */}
-      <nav className="bg-[#d9a5b2] shadow-lg py-4 px-6 flex justify-between items-center">
-        <h1 className="text-white text-2xl font-bold">ECOMMERCE CIXI ♡</h1>
-        <div className="flex gap-4">
-          <a href="/" className="text-white hover:text-[#623645] font-semibold">Home</a>
-          <a href="/kits" className="text-white hover:text-[#623645] font-semibold">Kits</a>
-        </div>
-      </nav>
+  <div className="min-h-screen bg-white">
 
       {/* Productos */}
       <div className="flex justify-center pt-10 px-4">
         <div className="w-3/5 space-y-6">
-          <h2 className="text-3xl text-white font-bold text-center">Nuestros Productos</h2>
+          <h2 className="text-3xl text-slate-900 font-bold text-center">Nuestros Productos</h2>
 
           {products.length === 0 ? (
             <p className="text-xs text-slate-200 text-center mt-2">No hay productos disponibles.</p>
           ) : (
             <ul className="space-y-3">
               {products.map((p) => (
-                <li key={p.id} className="rounded-xl border border-[#dac2b2] bg-[#f0cdd8] p-4 flex flex-col md:flex-row justify-between gap-3 shadow text-slate-900">
-                  <div className="flex-1 space-y-1">
-                    <div className="font-semibold text-[#623645] text-lg">{p.name}</div>
-                    <div className="text-xs">{p.category ? `Categoría: ${p.category.name}` : "Sin categoría"}</div>
-                    <div className="text-xs">{p.description ? p.description : "Sin descripción"}</div>
-                    <div className="text-xs">Precio: {p.price != null ? `$${p.price}` : "—"}</div>
-                    <div className="text-xs">Stock: {p.stock != null ? p.stock : 0}</div>
+                <li key={p.id} className="card p-4 flex items-start gap-4 text-slate-900">
+                  <div className="w-24 h-24 rounded overflow-hidden bg-slate-100 flex-shrink-0">
+                    {p.image ? (
+                      <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-500">Sin imagen</div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-slate-900 text-sm md:text-base truncate">{p.name}</div>
+                    <div className="text-xs text-slate-600">{p.category ? `Categoría: ${p.category.name}` : "Sin categoría"}</div>
+                    <div className="text-xs text-slate-600 line-clamp-2">{p.description ? p.description : "Sin descripción"}</div>
+                    <div className="text-xs text-slate-700 mt-1 flex items-center gap-3">
+                      <span>Precio: {p.price != null ? fmt.format(p.price) : "—"}</span>
+                      <span>Stock: {p.stock != null ? p.stock : 0}</span>
+                    </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">
-                    <button
-                      disabled={p.stock <= 0}
-                      onClick={() => {
-                        const r = addToCart({ id: p.id, name: p.name, price: p.price, stock: p.stock });
-                        if (!r.ok) {
-                          if (r.reason === "no-stock") alert("Sin stock disponible");
-                          if (r.reason === "stock-limit") alert("Alcanzaste el stock disponible");
-                          return;
-                        }
-                        alert("Agregado al carrito");
-                      }}
-                      className="bg-[#623645] text-white rounded px-3 py-1 text-xs font-semibold shadow disabled:opacity-60"
-                    >
-                      Agregar al carrito
-                    </button>
+                    {!isAdmin && (
+                      <button
+                        disabled={p.stock <= 0}
+                        onClick={() => {
+                          const r = addToCart({ id: p.id, name: p.name, price: p.price, stock: p.stock });
+                          if (!r.ok) {
+                            if (r.reason === "no-stock") alert("Sin stock disponible");
+                            if (r.reason === "stock-limit") alert("Alcanzaste el stock disponible");
+                            return;
+                          }
+                          alert("Agregado al carrito");
+                        }}
+                        className="btn-primary"
+                      >
+                        Agregar al carrito
+                      </button>
+                    )}
                     <CommentsBox productId={p.id} />
                   </div>
                 </li>
@@ -179,14 +195,14 @@ export default function HomePage() {
           )}
 
           {/* -------------------- KITS -------------------- */}
-          <h2 className="text-3xl text-white font-bold text-center mt-10">Kits</h2>
+          <h2 className="text-3xl text-slate-900 font-bold text-center mt-10">Kits</h2>
 
           {kits.length === 0 ? (
             <p className="text-xs text-slate-200 text-center mt-2">Aún no hay kits.</p>
           ) : (
             <ul className="space-y-3">
               {kits.map((k) => (
-                <li key={k.id} className="rounded-xl border border-[#dac2b2] bg-[#f0cdd8] p-4 flex flex-col md:flex-row justify-between gap-3 shadow text-slate-900">
+                <li key={k.id} className="card p-4 flex flex-col md:flex-row justify-between gap-3 text-slate-900">
                   <div className="flex-1 space-y-1">
                     <div className="font-semibold text-[#623645] text-lg">{k.name}</div>
                     <ul className="text-xs list-disc ml-4">
@@ -196,31 +212,33 @@ export default function HomePage() {
                         </li>
                       ))}
                     </ul>
-                    <div className="text-xs mt-1">Total del kit: ${kitTotal(k)}</div>
+                    <div className="text-xs mt-1">Total del kit: {fmt.format(kitTotal(k))}</div>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => {
-                        const r = addKitToCart(k);
-                        if (!r.ok) return;
-                        alert("Kit agregado al carrito");
-                      }}
-                      className="bg-[#623645] text-white rounded px-3 py-1 text-xs font-semibold shadow"
-                    >
-                      Agregar al carrito
-                    </button>
+                    {!isAdmin && (
+                      <button
+                        onClick={() => {
+                          const r = addKitToCart(k);
+                          if (!r.ok) return;
+                          alert("Kit agregado al carrito");
+                        }}
+                        className="btn-primary"
+                      >
+                        Agregar al carrito
+                      </button>
+                    )}
 
                     <a
                       href={`/kits/${k.id}`}
-                      className="bg-[#623645] text-white rounded px-3 py-1 text-xs font-semibold shadow"
+                      className="btn-primary"
                     >
                       Editar
                     </a>
 
                     <button
                       onClick={() => deleteKit(k.id)}
-                      className="bg-[#623645] text-white rounded px-3 py-1 text-xs font-semibold shadow"
+                      className="btn-primary"
                     >
                       Eliminar
                     </button>

@@ -46,54 +46,46 @@ export default function CategoriesPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#b37c8e] flex flex-col items-center">
-      {/* Navbar */}
-      <nav className="w-full bg-[#d9a5b2] shadow-lg py-4 px-6 flex items-center justify-between">
-        <h1 className="text-white text-2xl font-bold">ECOMMERCE CIXI ♡</h1>
-        <button
-          onClick={handleBack}
-          className="bg-[#623645] text-white rounded px-3 py-1 text-sm font-semibold shadow"
-        >
-          Volver
-        </button>
-      </nav>
+    <div className="min-h-screen bg-white flex items-start justify-center px-4 pt-10">
+      <div className="w-full max-w-md space-y-4">
+        <form className="card p-5" onSubmit={createCategory}>
+          <h1 className="text-slate-900 font-bold text-2xl mb-3 text-center">Crear categoría</h1>
 
-      {/* Formulario */}
-      <form
-        className="w-1/4 bg-[#d9a5b2] p-4 rounded-xl shadow-lg mt-10"
-        onSubmit={createCategory}
-      >
-        <h1 className="text-white font-bold text-3xl mb-3 text-center">
-          Crear categoría
-        </h1>
+          <label className="label">Nombre de la categoría</label>
+          <input
+            className="input-base w-full mb-2"
+            placeholder="Ej. Skincare"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            required
+          />
 
-        <input
-          className="border rounded p-2 mb-2 w-full bg-[#f0cdd8] text-slate-900 placeholder-gray-500 text-sm"
-          placeholder="Nombre de la categoría"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-        />
-        <button className="w-1/2 block mx-auto mt-3 bg-[#623645] text-white font-bold p-2 rounded-lg text-sm">
-          Crear
-        </button>
+          <button className="btn-primary w-full mt-2">Crear</button>
 
-        {msg && <p className="text-xs text-slate-700 mt-2">{msg}</p>}
+          {msg && <p className="alert-soft mt-3">{msg}</p>}
+        </form>
 
-        {!loading && list.length > 0 && (
-          <ul className="list-disc pl-5 mt-2 text-sm text-slate-900 space-y-1">
-            {list.map((c) => (
-              <li key={c.id}>{c.name}</li>
-            ))}
-          </ul>
-        )}
+        <div className="card p-5">
+          <h2 className="text-slate-900 font-semibold text-lg mb-3">Categorías existentes</h2>
 
-        {!loading && list.length === 0 && (
-          <p className="text-xs text-slate-700 mt-2">No hay categorías aún.</p>
-        )}
+          {loading && <p className="text-xs text-slate-700">Cargando...</p>}
 
-        {loading && <p className="text-slate-600 text-sm mt-2">Cargando...</p>}
-      </form>
+          {!loading && list.length === 0 && (
+            <p className="text-xs text-slate-600">No hay categorías aún.</p>
+          )}
+
+          {!loading && list.length > 0 && (
+            <ul className="space-y-2">
+              {list.map((c) => (
+                <li key={c.id} className="flex items-center justify-between text-slate-900 text-sm">
+                  <span>{c.name}</span>
+                  <span className="badge">ID {c.id}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

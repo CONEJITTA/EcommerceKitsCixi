@@ -47,83 +47,45 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen w-full bg-[#b37c8e] flex flex-col items-center">
-      {/* Navbar */}
-      <nav className="w-full bg-[#d9a5b2] shadow-lg py-4 px-6 flex items-center justify-between">
-        <h1 className="text-white text-2xl font-bold">ECOMMERCE CIXI ♡</h1>
-        <button
-          onClick={handleBack} // Función para volver a la página anterior o al home
-          className="bg-[#623645] text-white rounded px-3 py-1 text-sm font-semibold shadow"
-        >
-          Volver
-        </button>
-      </nav>
-
-      {/* Formulario de Inicio de sesión */}
-      <form
-        onSubmit={onSubmit}
-        className="w-1/4 bg-[#d9a5b2] p-4 rounded-xl shadow-lg mt-20"
-      >
+    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+      <form onSubmit={onSubmit} className="card w-full max-w-sm p-6">
         {error && (
-          <p className="bg-red-500 text-lg text-white p-3 rounded mb-2">{error}</p>
+          <p className="alert-soft mb-3">{error}</p>
         )}
 
-        <h1 className="text-slate-200 font-bold text-4xl mb-3 text-center">
-          Inicio de sesión
-        </h1>
+        <h1 className="text-slate-900 font-bold text-2xl mb-4 text-center">Iniciar sesión</h1>
 
-        <label className="text-slate-500 mb-1 block text-xs">Nombre de Usuario</label>
+        <label className="text-slate-600 mb-1 block text-xs">Email</label>
         <input
           type="email"
           {...register("email", {
-            required: {
-              value: true,
-              message: "Email requerido",
-            },
+            required: { value: true, message: "Email requerido" },
           })}
-          className="p-2 rounded mb-2 bg-[#f0cdd8] text-slate-900 w-full"
+          className="input-base w-full mb-2"
           placeholder="user@gmail.com"
         />
-        {errors.email && (
-          <span className="text-red-500 text-xs">{errors.email.message}</span>
-        )}
+  {errors.email && <span className="text-slate-700 text-xs">{errors.email.message}</span>}
 
-        <label className="text-slate-500 mb-1 block text-xs">Contraseña</label>
+        <label className="text-slate-600 mt-2 mb-1 block text-xs">Contraseña</label>
         <input
           type="password"
-          {...register("password", {
-            required: {
-              value: true,
-              message: "Contraseña requerida",
-            },
-          })}
-          className="p-2 rounded mb-3 bg-[#f0cdd8] text-slate-900 w-full"
+          {...register("password", { required: { value: true, message: "Contraseña requerida" } })}
+          className="input-base w-full mb-3"
           placeholder="******"
         />
-        {errors.password && (
-          <span className="text-red-500 text-xs">{errors.password.message}</span>
-        )}
+  {errors.password && <span className="text-slate-700 text-xs">{errors.password.message}</span>}
 
-        <button
-          type="submit"
-          className="w-1/2 block mx-auto mt-3 bg-[#623645] hover:bg-[#d4839e] text-white font-bold p-2 rounded-lg"
-        >
-          Iniciar Sesión
-        </button>
+        <button type="submit" className="btn-primary w-full mt-3">Iniciar sesión</button>
 
-        {/* Botón de Registro */}
         <div className="text-center mt-3">
           <button
             type="button"
-            onClick={() => router.push("/auth/register")} // Redirige a la página de registro
-            className="text-[#623645] font-semibold text-sm hover:text-[#d4839e] focus:outline-none"
+            onClick={() => router.push("/auth/register")}
+            className="text-[#f7c3c9] text-xs hover:underline"
           >
-            ¿No tienes una cuenta? Regístrate aquí
+            ¿No tienes una cuenta? Regístrate
           </button>
         </div>
-
-        {/* Botón Volver al Home */}
-        
       </form>
     </div>
   );
