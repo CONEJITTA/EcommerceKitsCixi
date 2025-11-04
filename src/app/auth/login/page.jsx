@@ -47,7 +47,17 @@ function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex items-center justify-center px-4">
+    <div className="min-h-screen bg-white flex items-center justify-center px-4 relative">
+      <button
+        type="button"
+        onClick={() => router.push("/")}
+        className="absolute top-6 left-6 btn-secondary px-3 py-1 text-xs"
+        aria-label="Ir al Home"
+        title="Ir al Home"
+      >
+        <span role="img" aria-hidden="true">🏠</span> Home
+      </button>
+
       <form onSubmit={onSubmit} className="card w-full max-w-sm p-6">
         {error && (
           <p className="alert-soft mb-3">{error}</p>

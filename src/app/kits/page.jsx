@@ -1,15 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { addCustomKitToCart } from "../../libs/cart";
 import { useToast } from "../../components/ToastProvider";
 
 export default function CreateKitPage() {
   const [name, setName] = useState("");
+  const [paperType, setPaperType] = useState("");
   const [products, setProducts] = useState([]);
   const [selected, setSelected] = useState({}); 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const toast = useToast();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "admin";
+  const router = useRouter();
+
+  const paperExtras = useMemo(() => ({
+    "Mate 90g": 10,
+    "Satinado 115g": 20,
+    "Fotográfico": 30,
+    "Reciclado": 15,
+    "Bond": 5,
+  }), []);
 
   useEffect(() => {
     (async () => {
@@ -42,6 +57,13 @@ export default function CreateKitPage() {
     e.preventDefault();
     setMessage("");
 
+    // Require login for creating kits (both admin and user flows)
+    if (!session?.user?.id) {
+      toast.info("Inicia sesión para crear un kit");
+      router.push("/auth/login");
+      return;
+    }
+
     const items = Object.entries(selected).map(([productId, quantity]) => ({
       productId: Number(productId),
       quantity,
@@ -59,23 +81,49 @@ export default function CreateKitPage() {
 
     setLoading(true);
     try {
-      const res = await fetch("/api/kits", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), items }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        toast.error(err?.error || `Error ${res.status}`);
-        return;
+      if (isAdmin) {
+        // Admin: persist as real Kit
+        const res = await fetch("/api/kits", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: name.trim(), items, paperType: paperType || null }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          toast.error(err?.error || `Error ${res.status}`);
+          return;
+        }
+        setName("");
+        setPaperType("");
+        setSelected({});
+        setMessage("");
+        toast.success("Kit creado y publicado");
+        // Opcional: ir al home para ver el kit en la lista (usuarios lo verán allí)
+        router.push("/");
+      } else {
+        // Usuario: no persiste; arma kit y agrega al carrito con extra por papel
+        const chosen = Object.entries(selected).map(([productId, quantity]) => {
+          const p = products.find((x) => x.id === Number(productId));
+          return {
+            productId: Number(productId),
+            name: p?.name ?? `Prod ${productId}`,
+            unitPrice: Number(p?.price || 0),
+            quantity,
+          };
+        });
+        const extraFee = paperType ? (paperExtras[paperType] || 0) : 0;
+        const r = addCustomKitToCart({ name: name.trim(), items: chosen, paperType: paperType || null, extraFee });
+        if (!r.ok) {
+          toast.error("No se pudo agregar el kit al carrito");
+          return;
+        }
+        setName("");
+        setPaperType("");
+        setSelected({});
+        setMessage("");
+        toast.success("Tu kit fue agregado al carrito");
+        router.push("/cart");
       }
-
-      
-  setName("");
-  setSelected({});
-  setMessage("");
-  toast.success("Kit creado exitosamente"); 
     } finally {
       setLoading(false);
     }
@@ -98,6 +146,22 @@ export default function CreateKitPage() {
                 placeholder="Ej. Kit de baño"
                 className="w-full rounded-md border border-slate-300 bg-white text-slate-700 text-sm px-3 py-2 shadow-sm"
               />
+            </div>
+
+            <div>
+              <label className="block text-[#623645] text-sm font-semibold mb-1">Tipo de papel (opcional)</label>
+              <select
+                value={paperType}
+                onChange={(e) => setPaperType(e.target.value)}
+                className="w-full rounded-md border border-slate-300 bg-white text-slate-700 text-sm px-3 py-2 shadow-sm"
+              >
+                <option value="">— Seleccionar —</option>
+                <option value="Mate 90g">Mate 90g</option>
+                <option value="Satinado 115g">Satinado 115g</option>
+                <option value="Fotográfico">Fotográfico</option>
+                <option value="Reciclado">Reciclado</option>
+                <option value="Bond">Bond</option>
+              </select>
             </div>
 
             <div>

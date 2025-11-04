@@ -18,6 +18,7 @@ export async function POST(req) {
   const body = await req.json().catch(() => ({}));
   const name = String(body?.name || "").trim();
   const items = Array.isArray(body?.items) ? body.items : [];
+  const paperType = body?.paperType ? String(body.paperType).trim() : null;
 
   if (!name) {
     return NextResponse.json({ error: "Nombre requerido" }, { status: 400 });
@@ -50,6 +51,7 @@ export async function POST(req) {
   const created = await prisma.kit.create({
     data: {
       name,
+      paperType,
       items: {
         create: norm.map((x) => ({ productId: x.productId, quantity: x.quantity })),
       },

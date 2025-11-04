@@ -104,3 +104,35 @@ export function addKitToCart(kit) {
   saveCart(cart);
   return { ok: true };
 }
+
+// Add a custom (non-persisted) kit to cart, with optional paperType and extra fee
+export function addCustomKitToCart({ name, items, paperType, extraFee = 0 }) {
+  const cart = getCart();
+
+  const lineId = `kit-custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const base = (Array.isArray(items) ? items : []).reduce((acc, it) => {
+    const price = Number(it?.unitPrice || 0);
+    const qty = Number(it?.quantity || 0);
+    return acc + price * qty;
+  }, 0);
+  const total = base + Number(extraFee || 0);
+
+  cart.push({
+    id: lineId,
+    type: "customKit",
+    name: `Kit: ${name || "Personalizado"}`,
+    price: total,
+    qty: 1,
+    paperType: paperType || null,
+    extraFee: Number(extraFee || 0),
+    detail: (items || []).map((it) => ({
+      productId: it.productId,
+      name: it.name,
+      unitPrice: it.unitPrice,
+      quantity: it.quantity,
+    })),
+  });
+
+  saveCart(cart);
+  return { ok: true };
+}

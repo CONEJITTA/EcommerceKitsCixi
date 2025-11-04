@@ -7,6 +7,7 @@ export default function EditKitPage({ params }) {
   const kitId = Number(params.id);
   const [kit, setKit] = useState(null);
   const [name, setName] = useState("");
+  const [paperType, setPaperType] = useState("");
   const [products, setProducts] = useState([]);
   const [selected, setSelected] = useState({});
   const [loading, setLoading] = useState(false);
@@ -22,6 +23,7 @@ export default function EditKitPage({ params }) {
       const ps = await prodRes.json();
       setKit(k);
       setName(k?.name || "");
+  setPaperType(k?.paperType || "");
       setProducts(Array.isArray(ps) ? ps : []);
       // map inicial
       const init = {};
@@ -56,7 +58,7 @@ export default function EditKitPage({ params }) {
       const res = await fetch(`/api/kits/${kitId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: name.trim(), items }),
+        body: JSON.stringify({ name: name.trim(), items, paperType: paperType || null }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -87,6 +89,22 @@ export default function EditKitPage({ params }) {
                 onChange={(e) => setName(e.target.value)}
                 className="w-full rounded-md border border-slate-300 bg-white text-slate-700 text-sm px-3 py-2 shadow-sm"
               />
+            </div>
+
+            <div>
+              <label className="block text-[#623645] text-sm font-semibold mb-1">Tipo de papel (opcional)</label>
+              <select
+                value={paperType}
+                onChange={(e) => setPaperType(e.target.value)}
+                className="w-full rounded-md border border-slate-300 bg-white text-slate-700 text-sm px-3 py-2 shadow-sm"
+              >
+                <option value="">— Seleccionar —</option>
+                <option value="Mate 90g">Mate 90g</option>
+                <option value="Satinado 115g">Satinado 115g</option>
+                <option value="Fotográfico">Fotográfico</option>
+                <option value="Reciclado">Reciclado</option>
+                <option value="Bond">Bond</option>
+              </select>
             </div>
 
             <div>

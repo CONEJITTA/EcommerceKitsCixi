@@ -19,6 +19,7 @@ export async function PATCH(req, { params }) {
   const body = await req.json().catch(() => ({}));
   const name = String(body?.name || "").trim();
   const items = Array.isArray(body?.items) ? body.items : [];
+  const paperType = body?.paperType ? String(body.paperType).trim() : null;
 
   if (!name) return NextResponse.json({ error: "Nombre requerido" }, { status: 400 });
   if (items.length === 0) {
@@ -43,6 +44,7 @@ export async function PATCH(req, { params }) {
     where: { id },
     data: {
       name,
+      paperType,
       items: { create: norm },
     },
     include: {

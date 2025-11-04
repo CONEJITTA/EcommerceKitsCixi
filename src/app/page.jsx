@@ -317,19 +317,12 @@ export default function HomePage() {
                       </button>
                     )}
 
-                    <a
-                      href={`/kits/${k.id}`}
-                      className="btn-primary"
-                    >
-                      Editar
-                    </a>
-
-                    <button
-                      onClick={() => deleteKit(k.id)}
-                      className="btn-primary"
-                    >
-                      Eliminar
-                    </button>
+                    {isAdmin && (
+                      <>
+                        <a href={`/kits/${k.id}`} className="btn-primary">Editar</a>
+                        <button onClick={() => deleteKit(k.id)} className="btn-primary">Eliminar</button>
+                      </>
+                    )}
                   </div>
                 </li>
               ))}

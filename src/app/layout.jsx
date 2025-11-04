@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ClientWrapper from "../components/ClientWrapper";
 import Navbar from "../components/Navbar";
+import FloatingCreateKit from "../components/FloatingCreateKit";
 
 
 
@@ -29,6 +30,7 @@ export default function RootLayout({ children }) {
       >
         <ClientWrapper>
           <Navbar />
+          <FloatingCreateKit />
           {children}
         </ClientWrapper>
       </body>
