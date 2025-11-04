@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../../../auth/[...nextauth]/route";
 const prisma = new PrismaClient();
 
 function parseId(idRaw) {
@@ -40,6 +42,32 @@ export async function POST(req, { params }) {
       data: { productId: id, userName: "Usuario", content },
     });
     return NextResponse.json(created, { status: 201 });
+  } catch (e) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
+}
+
+export async function DELETE(req, { params }) {
+  const productId = parseId(params.id);
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session || session?.user?.role !== 'admin') {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const commentId = Number(body?.commentId);
+    if (!Number.isFinite(commentId)) {
+      return NextResponse.json({ error: 'commentId inválido' }, { status: 400 });
+    }
+
+    const c = await prisma.comment.findUnique({ where: { id: commentId } });
+    if (!c || c.productId !== productId) {
+      return NextResponse.json({ error: 'Comentario no encontrado' }, { status: 404 });
+    }
+
+    await prisma.comment.delete({ where: { id: commentId } });
+    return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }

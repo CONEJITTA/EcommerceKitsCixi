@@ -126,3 +126,23 @@ textarea.input-base:focus-visible {
 .toast-error { border-color: #f7c3c9; }
 .toast-warn { border-color: #f7c3c9; }
 .toast-info { border-color: #f7c3c9; }
+
+/* Compact product row styles (admin pricing) */
+.product-row { display: grid; grid-template-columns: 96px 1fr auto; gap: 12px; align-items: start; }
+@media (max-width: 640px) {
+    .product-row { grid-template-columns: 72px 1fr; }
+}
+.product-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+
+.img-thumb { width: 96px; height: 96px; object-fit: cover; border: 1px solid #f7c3c9; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); background: #fff; }
+@media (max-width: 640px) { .img-thumb { width: 72px; height: 72px; } }
+
+.img-thumb-sm { width: 48px; height: 48px; object-fit: cover; border: 1px solid #f7c3c9; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); background: #fff; }
+
+.input-sm { padding: 6px 8px; font-size: 12px; }
+
+.text-clip-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-clamp: 2; }
+
+/* Key-Value line for compact product metadata */
+.kv { font-size: 0.75rem; color: #334155; }
+.kv b { color: #64748b; font-weight: 600; margin-right: 4px; }

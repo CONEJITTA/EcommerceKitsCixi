@@ -100,9 +100,9 @@ export default function CartPage() {
                       className="card p-3 flex flex-col md:flex-row md:items-center justify-between gap-3 text-slate-900"
                     >
                       <div className="min-w-0">
-                        <div className="font-semibold text-slate-900 text-sm truncate">{it.name}</div>
-                        <div className="text-xs text-slate-600">Precio: {fmt.format(price)}</div>
-                        <div className="text-xs text-slate-600">Stock: {Number.isFinite(max) ? max : "—"}</div>
+                        <div className="font-semibold text-[#623645] text-sm truncate">{it.name}</div>
+                        <div className="kv"><b>Precio:</b>{fmt.format(price)}</div>
+                        <div className="kv"><b>Disponible:</b>{Number.isFinite(max) ? max : "—"}</div>
                       </div>
 
                       {/* Controles de cantidad */}

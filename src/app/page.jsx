@@ -151,7 +151,7 @@ function CommentsBox({ productId, avg = 0, ratingCount = 0 }) {
                 <li key={c.id} className="card p-3">
                   <div className="text-xs text-slate-700">
                     <div className="opacity-80">{c.content}</div>
-                    <div className="opacity-60 mt-1">{new Date(c.createdAt).toLocaleString()}</div>
+                    <div className="opacity-60 mt-1">{new Date(c.createdAt).toLocaleDateString()}</div>
                   </div>
                 </li>
               ))}
@@ -173,8 +173,20 @@ export default function HomePage() {
   const toast = useToast();
 
   async function loadProducts() {
-    const res = await fetch("/api/products", { cache: "no-store" });
-    setProducts(await res.json());
+    try {
+      const res = await fetch("/api/products", { cache: "no-store" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        toast.error(err?.error || `Error ${res.status}`);
+        setProducts([]);
+        return;
+      }
+      const data = await res.json();
+      setProducts(Array.isArray(data) ? data : []);
+    } catch {
+      toast.error("No se pudieron cargar los productos");
+      setProducts([]);
+    }
   }
 
   async function loadKits() {
@@ -227,21 +239,22 @@ export default function HomePage() {
           ) : (
             <ul className="space-y-3">
               {products.map((p) => (
-                <li key={p.id} className="card p-4 flex items-start gap-4 text-slate-900">
-                  <div className="w-24 h-24 rounded overflow-hidden bg-slate-100 flex-shrink-0">
+                <li key={p.id} className="card p-3 md:p-4 flex items-start gap-3 md:gap-4 text-slate-900">
+                  {/* Miniatura con borde/acento igual a admin */}
+                  <div className="flex-shrink-0">
                     {p.image ? (
-                      <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                      <img src={p.image} alt={p.name} className="img-thumb" />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-[10px] text-slate-500">Sin imagen</div>
+                      <div className="img-thumb" style={{display:'flex',alignItems:'center',justifyContent:'center',fontSize:10,color:'#94a3b8'}}>Sin imagen</div>
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-slate-900 text-sm md:text-base truncate">{p.name}</div>
+                    <div className="font-semibold text-[#623645] text-sm md:text-base truncate">{p.name}</div>
                     <div className="text-xs text-slate-600">{p.category ? `Categoría: ${p.category.name}` : "Sin categoría"}</div>
                     <div className="text-xs text-slate-600 line-clamp-2">{p.description ? p.description : "Sin descripción"}</div>
-                    <div className="text-xs text-slate-700 mt-1 flex items-center gap-3">
-                      <span>Precio: {p.price != null ? fmt.format(p.price) : "—"}</span>
-                      <span>Stock: {p.stock != null ? p.stock : 0}</span>
+                    <div className="text-xs text-slate-700 mt-1">
+                      <div>Precio: {p.price != null ? fmt.format(p.price) : "—"}</div>
+                      <div>Disponible: {p.stock != null ? p.stock : 0}</div>
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-2">

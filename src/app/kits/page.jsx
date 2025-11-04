@@ -118,11 +118,15 @@ export default function CreateKitPage() {
                           onChange={(e) => toggle(p.id, e.target.checked)}
                           className="accent-[#623645]"
                         />
-                        <div className="text-sm text-slate-700">
-                          <div className="font-semibold">{p.name}</div>
-                          <div className="opacity-80 text-xs">
-                            Precio: {p.price != null ? `$${p.price}` : "—"} · Stock: {p.stock ?? 0}
-                          </div>
+                        {p.image ? (
+                          <img src={p.image} alt={p.name} className="img-thumb-sm" />
+                        ) : (
+                          <div className="img-thumb-sm" style={{display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,color:'#94a3b8'}}>Sin</div>
+                        )}
+                        <div className="text-sm text-slate-700 min-w-0">
+                          <div className="font-semibold text-[#623645] truncate max-w-[180px] md:max-w-xs">{p.name}</div>
+                          <div className="kv"><b>Precio:</b>{p.price != null ? `$${p.price}` : "—"}</div>
+                          <div className="kv"><b>Disponible:</b>{p.stock ?? 0}</div>
                         </div>
                       </div>
 
